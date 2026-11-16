@@ -1,0 +1,101 @@
+[
+  {
+    "slug": "performance",
+    "nome": "Mídia Paga & Performance",
+    "cor": "#d9480f",
+    "icone": "🎯",
+    "janela_dias": 30,
+    "palavras": [
+      "google ads", "meta ads", "facebook ads", "tiktok ads", "linkedin ads", "amazon ads",
+      "mídia paga", "midia paga", "paid media", "paid search", "ppc", "cpc", "cpm", "cpa", "roas",
+      "performance max", "pmax", "tráfego pago", "trafego pago", "retail media", "programática",
+      "programatica", "programmatic", "anúncio", "anuncio", "anúncios", "anuncios", "advertisers",
+      "ad spend", "campanha de performance", "conversão", "conversao", "conversion", "cro",
+      "remarketing", "retargeting", "lance", "bidding", "atribuição", "atribuicao", "attribution",
+      "growth", "funil de vendas", "geração de leads", "geracao de leads", "lead generation"
+    ]
+  },
+  {
+    "slug": "seo",
+    "nome": "SEO & Conteúdo",
+    "cor": "#2b8a3e",
+    "icone": "🔎",
+    "janela_dias": 30,
+    "palavras": [
+      "seo", "core update", "algoritmo do google", "google search", "busca orgânica", "busca organica",
+      "organic search", "search console", "serp", "backlink", "backlinks", "link building",
+      "ranqueamento", "ranking", "indexação", "indexacao", "indexing", "crawl", "ai overviews",
+      "ai overview", "ai mode", "geo", "aeo", "marketing de conteúdo", "marketing de conteudo",
+      "content marketing", "blog", "copywriting", "palavra-chave", "palavras-chave", "keyword",
+      "keywords", "e-e-a-t", "eeat", "featured snippet", "rich results", "sitemap", "bing search",
+      "inbound", "newsletter", "podcast"
+    ]
+  },
+  {
+    "slug": "social",
+    "nome": "Redes Sociais & Influência",
+    "cor": "#c2255c",
+    "icone": "📱",
+    "janela_dias": 30,
+    "palavras": [
+      "instagram", "tiktok", "facebook", "whatsapp", "linkedin", "youtube", "threads", "x/twitter",
+      "twitter", "pinterest", "snapchat", "kwai", "reels", "shorts", "stories", "redes sociais",
+      "rede social", "social media", "influenciador", "influenciadores", "influencer", "influencers",
+      "creator", "creators", "criador de conteúdo", "criadores de conteúdo", "creator economy",
+      "engajamento", "engagement", "seguidores", "followers", "viral", "trend", "ugc",
+      "marketing de influência", "marketing de influencia", "community manager", "social commerce",
+      "live commerce", "bluesky", "twitch"
+    ]
+  },
+  {
+    "slug": "branding",
+    "nome": "Publicidade & Branding",
+    "cor": "#5f3dc4",
+    "icone": "📣",
+    "janela_dias": 30,
+    "palavras": [
+      "campanha", "campanhas", "campaign", "comercial", "filme publicitário", "filme publicitario",
+      "agência", "agencia", "agency", "agencies", "publicidade", "propaganda", "advertising",
+      "branding", "marca", "marcas", "brand", "brands", "rebranding", "identidade visual",
+      "posicionamento", "cannes lions", "effie", "prêmio", "premio", "awards", "criatividade",
+      "creative", "cmo", "diretor de marketing", "patrocínio", "patrocinio", "sponsorship",
+      "out of home", "ooh", "tv aberta", "streaming", "ctv", "super bowl", "black friday",
+      "collab", "naming rights", "conta publicitária", "concorrência", "live marketing", "ativação"
+    ]
+  },
+  {
+    "slug": "martech",
+    "nome": "IA & MarTech",
+    "cor": "#1971c2",
+    "icone": "🤖",
+    "janela_dias": 30,
+    "palavras": [
+      "inteligência artificial", "inteligencia artificial", "ia generativa", "generative ai", "genai",
+      "chatgpt", "gemini", "claude", "copilot", "llm", "ai agents", "agentes de ia", "agentic",
+      "martech", "automação de marketing", "automacao de marketing", "marketing automation", "crm",
+      "cdp", "hubspot", "salesforce", "rd station", "adobe", "ga4", "google analytics", "analytics",
+      "dados primários", "first-party data", "first party data", "personalização", "personalizacao",
+      "personalization", "chatbot", "e-mail marketing", "email marketing", "ferramenta",
+      "plataforma de dados", "data clean room", "mmm", "marketing mix modeling", "tag manager",
+      "ai-powered", "machine learning"
+    ]
+  },
+  {
+    "slug": "mercado",
+    "nome": "E-commerce, Mercado & Regulação",
+    "cor": "#0b7285",
+    "icone": "🛒",
+    "janela_dias": 90,
+    "palavras": [
+      "e-commerce", "ecommerce", "comércio eletrônico", "comercio eletronico", "varejo", "retail",
+      "marketplace", "mercado livre", "amazon", "shopee", "magalu", "shein", "temu", "consumidor",
+      "consumidores", "consumer", "consumo", "pesquisa", "estudo", "survey", "relatório", "relatorio",
+      "report", "tendências", "tendencias", "trends", "lgpd", "anpd", "conar", "privacidade",
+      "privacy", "cookies", "third-party cookies", "gdpr", "regulação", "regulacao", "regulation",
+      "antitruste", "antitrust", "ftc", "digital markets act", "dma", "fusão", "aquisição",
+      "aquisicao", "acquisition", "investimento publicitário", "investimento publicitario",
+      "faturamento", "receita", "revenue", "cenp", "procon", "senacon", "publicidade infantil",
+      "bets"
+    ]
+  }
+]
