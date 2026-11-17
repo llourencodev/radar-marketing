@@ -174,6 +174,7 @@ class Processor:
         self.glossary = glossary if glossary is not None else settings.load_glossary()
         self._cat_re = {c["slug"]: _word_regex(c["palavras"]) for c in self.categories}
         self._window = {c["slug"]: int(c.get("janela_dias", 30)) for c in self.categories}
+        self._strict = {c["slug"]: bool(c.get("exige_palavra_chave")) for c in self.categories}
         self._glossary_re = [
             (term, re.compile(r"(?<![\w])" + re.escape(term if term.isupper() else _norm(term)) + r"(?![\w])"), term.isupper())
             for term in self.glossary
@@ -188,17 +189,26 @@ class Processor:
 
     # ------------------------------------------------------------------ regras
     def classify(self, source: dict, title: str, trecho: str) -> list[tuple[str, str, float]]:
-        """Abas da notícia: categoria da fonte + palavras-chave (título vale o dobro)."""
+        """Abas da notícia: categoria da fonte + palavras-chave (título vale o dobro).
+
+        Em abas com `"exige_palavra_chave": true`, a notícia só entra pela fonte se citar ao menos
+        uma palavra-chave da aba; sem nenhuma aba, ela é descartada (buscas amplas trazem ruído).
+        """
         title_norm, body_norm = _norm(title), _norm(trecho)
         found: dict[str, tuple[str, float]] = {}
+        scores: dict[str, int] = {}
         for slug, regex in self._cat_re.items():
             score = 2 * len(set(m.group(0) for m in regex.finditer(title_norm)))
             score += len(set(m.group(0) for m in regex.finditer(body_norm)))
+            scores[slug] = score
             if score >= 2:
                 found[slug] = ("regra", round(min(1.0, 0.4 + 0.15 * score), 2))
         default = source["categoria"]
         if default in self._cat_re and default not in found:
-            found[default] = ("fonte", 0.6)
+            if not self._strict.get(default):
+                found[default] = ("fonte", 0.6)
+            elif scores[default] >= 1:
+                found[default] = ("fonte", 0.5)
         ordered = sorted(found.items(), key=lambda kv: kv[1][1], reverse=True)
         return [(slug, origem, conf) for slug, (origem, conf) in ordered]
 
@@ -350,7 +360,10 @@ def _classification_fingerprint(conn: sqlite3.Connection, categories: list[dict]
 
 
 def reclassify_all(conn: sqlite3.Connection, categories: list[dict] | None = None) -> int:
-    """Refaz as abas de todas as notícias já gravadas com as regras atuais."""
+    """Refaz as abas de todas as notícias já gravadas com as regras atuais.
+
+    Uma notícia que não se encaixa em mais nenhuma aba sai do banco, como aconteceria na coleta.
+    """
     processor = Processor(conn, categories=categories, glossary={})
     rows = conn.execute(
         "SELECT a.id, a.titulo, a.trecho, s.categoria FROM articles a JOIN sources s ON s.id = a.source_id"
@@ -358,10 +371,19 @@ def reclassify_all(conn: sqlite3.Connection, categories: list[dict] | None = Non
     for row in rows:
         found = processor.classify({"categoria": row["categoria"]}, row["titulo"], row["trecho"] or "")
         conn.execute("DELETE FROM article_categories WHERE article_id = ?", (row["id"],))
+        if not found:
+            conn.execute("DELETE FROM articles_fts WHERE rowid = ?", (row["id"],))
+            conn.execute("DELETE FROM article_analysis WHERE article_id = ?", (row["id"],))
+            conn.execute("UPDATE articles SET grupo_id = NULL WHERE id = ?", (row["id"],))
+            conn.execute("DELETE FROM articles WHERE id = ?", (row["id"],))
+            continue
         conn.executemany(
             "INSERT INTO article_categories (article_id, categoria, origem, confianca) VALUES (?, ?, ?, ?)",
             [(row["id"], slug, origem, conf) for slug, origem, conf in found],
         )
+    conn.execute(
+        "DELETE FROM article_groups WHERE id NOT IN (SELECT DISTINCT grupo_id FROM articles WHERE grupo_id IS NOT NULL)"
+    )
     return len(rows)
 
 

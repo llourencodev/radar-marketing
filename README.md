@@ -22,9 +22,13 @@ Pela linha de comando:
 ## O que ele faz
 
 - **8 abas temáticas**: Marketing Digital, Mídia Paga & Performance, SEO & Conteúdo, Redes
-  Sociais & Influência, Publicidade & Branding, IA & MarTech, Lojas de Construção & Varejo
-  (Leroy Merlin, Telhanorte, Obramax, Sodimac, Juntos Somos Mais, Anamaco, grandes
-  varejistas) e E-commerce, Mercado & Regulação.
+  Sociais & Influência, Publicidade & Branding, IA & MarTech, Lojas de Materiais de Construção
+  e E-commerce, Mercado & Regulação.
+- **Lojas de Materiais de Construção**: marketing, campanhas e promoções das maiores redes
+  (Leroy Merlin, Obramax, Sodimac, Telhanorte/Tumelero, Joli, Quero-Quero, Casa da Água,
+  Carajás, Ferreira Costa…) e dos fabricantes de tintas, ferramentas, cimento, blocos,
+  revestimentos, louças e telhas. A aba usa `"exige_palavra_chave": true`: só entra notícia
+  que cite uma loja, marca ou produto do setor, o que tira o ruído das buscas amplas.
 - **Reclassificação automática**: ao mudar abas ou palavras-chave em `config/categories.json`
   (ou o tema de uma fonte), as notícias já coletadas são reclassificadas na próxima execução.
 - **Nada inventado**: título, data, imagem e link vêm só da fonte. Ausência aparece

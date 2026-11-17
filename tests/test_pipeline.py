@@ -29,15 +29,51 @@ def test_palavra_chave_exige_palavra_inteira(conn, sources):
     assert [slug for slug, _, _ in cats] == ["branding"]
 
 
-def test_classifica_lojas_de_construcao_varejo_e_marketing_digital(conn, sources):
+def test_classifica_lojas_de_materiais_de_construcao_e_marketing_digital(conn, sources):
     proc = Processor(conn, now=NOW)
     slugs = lambda title: [slug for slug, _, _ in proc.classify(sources["Blog de SEO"], title, "")]  # noqa: E731
-    assert "construcao" in slugs("Leroy Merlin dá voz à casa em campanha de Black Friday")
-    assert "construcao" in slugs("Telhanorte escolhe nova tecnologia para lojas de material de construção")
-    assert "construcao" in slugs("Magazine Luiza e Casas Bahia apostam em lojas físicas no Natal")
+    construcao = [
+        "Leroy Merlin dá voz à casa em campanha de Black Friday",
+        "Telhanorte escolhe nova tecnologia para lojas de material de construção",
+        "Suvinil escolhe Sol da Meia-Noite como Cor do Ano 2027",
+        "Votorantim Cimentos lança nova argamassa para o varejo",
+        "Portobello apresenta coleção de porcelanatos e azulejos",
+        "Vonder e Makita fazem promoção de ferramentas elétricas",
+        "Black Friday da Ferreira Costa tem ofertas em tintas e telhas",
+    ]
+    for title in construcao:
+        assert "construcao" in slugs(title), title
     assert "digital" in slugs("Varejo acelera estratégia omnichannel com marketing digital")
-    # "reforma tributária" não é assunto de lojas de construção
-    assert "construcao" not in slugs("Reforma tributária muda regras para o setor de serviços")
+    # varejo em geral e assuntos parecidos ficam fora da aba de materiais de construção
+    for title in (
+        "Magazine Luiza e Casas Bahia apostam em lojas físicas no Natal",
+        "Vendas no varejo sobem 0,2% em setembro",
+        "Reforma tributária muda regras para o setor de serviços",
+        "Nova ferramenta de IA ajuda times de marketing",
+    ):
+        assert "construcao" not in slugs(title), title
+
+
+def test_aba_que_exige_palavra_chave_descarta_ruido_das_buscas(conn, sources):
+    cats = [
+        {"slug": "branding", "nome": "B", "palavras": ["campanha"]},
+        {"slug": "construcao", "nome": "C", "palavras": ["leroy merlin", "cimento"], "exige_palavra_chave": True},
+    ]
+    proc = Processor(conn, categories=cats, now=NOW)
+    fonte = dict(sources["Jornal de Propaganda"], categoria="construcao")
+    assert proc.classify(fonte, "Polícia investiga desvio de verbas na prefeitura", "") == []
+    assert [s for s, _, _ in proc.classify(fonte, "Preço do cimento sobe em novembro", "")] == ["construcao"]
+    # notícia sem nenhuma aba é descartada na coleta
+    assert proc.process(fonte, _item("Polícia investiga desvio de verbas na prefeitura", "https://x.example.com/p")) is None
+    kept = proc.process(fonte, _item("Leroy Merlin abre loja em Natal", "https://x.example.com/lm"))
+    assert kept is not None
+    # e sai do banco na reclassificação quando as regras ficam mais rígidas
+    noisy = proc.process(sources["Jornal de Propaganda"], _item("Prefeitura lança campanha de vacinação", "https://x.example.com/v"))
+    conn.execute("UPDATE sources SET categoria = 'construcao' WHERE nome = 'Jornal de Propaganda'")
+    pipeline.reclassify_all(conn, [cats[1]])
+    ids = {r[0] for r in conn.execute("SELECT id FROM articles")}
+    assert kept in ids and noisy not in ids
+    assert conn.execute("SELECT COUNT(*) FROM articles_fts WHERE rowid = ?", (noisy,)).fetchone()[0] == 0
 
 
 def test_reclassifica_o_banco_quando_as_abas_mudam(conn, sources):

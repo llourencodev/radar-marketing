@@ -157,19 +157,24 @@ def source_url(entry: dict) -> str:
 
 
 def init_db(db_path: Path | str, sources: list[dict] | None = None) -> None:
-    """Cria as tabelas e insere as fontes de config/sources.json ainda ausentes."""
+    """Cria as tabelas e insere/atualiza as fontes de config/sources.json.
+
+    `"ativo": false` no arquivo desativa a fonte; sem o campo, vale o que estiver no banco
+    (no servidor local, a tela "Fontes e coleta" pode ativar e desativar).
+    """
     with session(db_path) as conn:
         conn.executescript(SCHEMA)
         for entry in sources or []:
             conn.execute(
                 """
                 INSERT INTO sources (nome, tipo, url, consulta, categoria, oficial,
-                                     prioridade, intervalo_min, idioma, seletor)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     prioridade, intervalo_min, idioma, seletor, ativo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(url) DO UPDATE SET
                     nome = excluded.nome, categoria = excluded.categoria,
                     oficial = excluded.oficial, prioridade = excluded.prioridade,
-                    intervalo_min = excluded.intervalo_min, seletor = excluded.seletor
+                    intervalo_min = excluded.intervalo_min, seletor = excluded.seletor,
+                    ativo = CASE WHEN excluded.ativo = 0 THEN 0 ELSE sources.ativo END
                 """,
                 (
                     entry["nome"],
@@ -182,5 +187,6 @@ def init_db(db_path: Path | str, sources: list[dict] | None = None) -> None:
                     entry.get("intervalo_min"),
                     entry.get("idioma", "pt"),
                     entry.get("seletor"),
+                    0 if entry.get("ativo") is False else 1,
                 ),
             )

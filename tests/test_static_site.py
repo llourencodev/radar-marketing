@@ -85,6 +85,21 @@ def test_sincronizar_fontes_segue_o_arquivo_de_configuracao(cfg):
         assert conn.execute("SELECT COUNT(*) FROM sources WHERE ativo = 1").fetchone()[0] == 3
 
 
+def test_ativo_false_no_arquivo_desativa_a_fonte(cfg):
+    desativada = dict(TEST_SOURCES[2], categoria="mercado", ativo=False)
+    db.init_db(cfg.db_path, [TEST_SOURCES[0], desativada])
+    with db.session(cfg.db_path) as conn:
+        rows = {r["nome"]: (r["ativo"], r["categoria"]) for r in conn.execute("SELECT nome, ativo, categoria FROM sources")}
+    assert rows["Jornal de Propaganda"] == (0, "mercado")
+    assert rows["Blog de SEO"][0] == 1
+    # sem o campo, vale o que está no banco (ativar/desativar pela tela local)
+    with db.session(cfg.db_path) as conn:
+        conn.execute("UPDATE sources SET ativo = 0 WHERE nome = 'Blog de SEO'")
+    db.init_db(cfg.db_path, [TEST_SOURCES[0]])
+    with db.session(cfg.db_path) as conn:
+        assert conn.execute("SELECT ativo FROM sources WHERE nome = 'Blog de SEO'").fetchone()[0] == 0
+
+
 def test_tolerancia_antecipa_fontes_quase_vencidas(cfg):
     calls = []
 
