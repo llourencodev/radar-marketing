@@ -29,13 +29,18 @@
     D.all = data.articles;
     D.byId = new Map(D.all.map((a) => [a.id, a]));
     D.fontes = null;
-    // representante de cada grupo de duplicadas: oficial primeiro, depois relevância, depois a mais antiga no banco
+    // representante de cada grupo de duplicadas (mesma regra do servidor): oficial, link original,
+    // com imagem da fonte, relevância e, por fim, a mais antiga no banco
+    const direct = (a) => Number(a.status !== "link via agregador");
+    const withImage = (a) => Number(Boolean(a.imagem_url));
     const best = new Map();
     D.all.forEach((a) => {
       a._tokens = FIELDS.map((field) => tokens(a[field]));
       if (!a.grupo_id) return;
       const cur = best.get(a.grupo_id);
-      if (!cur || (a.oficial - cur.oficial || a.relevancia - cur.relevancia || cur.id - a.id) > 0) best.set(a.grupo_id, a);
+      const better = !cur || (a.oficial - cur.oficial || direct(a) - direct(cur) || withImage(a) - withImage(cur)
+        || a.relevancia - cur.relevancia || cur.id - a.id) > 0;
+      if (better) best.set(a.grupo_id, a);
     });
     D.all.forEach((a) => { a._rep = !a.grupo_id || best.get(a.grupo_id) === a; });
   }

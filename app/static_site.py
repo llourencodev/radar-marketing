@@ -100,7 +100,7 @@ def export(cfg: settings.Settings, out_dir: Path | str) -> dict:
     health["coletando"] = False
     meta = {
         "versao": __version__,
-        "categorias": [{k: v for k, v in c.items() if k != "palavras"} for c in settings.load_categories()],
+        "categorias": settings.public_categories(),
         "sinais": {key: spec["rotulo"] for key, spec in SINAIS.items()},
         "ia": cfg.llm_provider,
         "intervalo_min": cfg.collect_interval_min,

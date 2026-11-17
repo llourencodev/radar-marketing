@@ -77,6 +77,13 @@ def title_similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a, b, autojunk=False).ratio()
 
 
+def secure_image_url(url: str | None) -> str | None:
+    """Imagem sempre por https: páginas https (como o GitHub Pages) bloqueiam imagens http."""
+    if url and url.strip().lower().startswith("http://"):
+        return "https://" + url.strip()[7:]
+    return url
+
+
 def is_http_url(url: str | None) -> bool:
     if not url:
         return False

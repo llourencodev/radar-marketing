@@ -22,6 +22,7 @@ from .textutil import (
     host_of,
     is_http_url,
     normalize_title,
+    secure_image_url,
     strip_accents,
     title_similarity,
     to_iso,
@@ -175,6 +176,12 @@ class Processor:
         self._cat_re = {c["slug"]: _word_regex(c["palavras"]) for c in self.categories}
         self._window = {c["slug"]: int(c.get("janela_dias", 30)) for c in self.categories}
         self._strict = {c["slug"]: bool(c.get("exige_palavra_chave")) for c in self.categories}
+        # pontos mínimos para entrar pela fonte (título vale 2, texto vale 1)
+        self._min_points = {c["slug"]: int(c.get("pontos_minimos", 1)) for c in self.categories}
+        # Abas regionais: "marcas" (lojas da região) valem sozinhas; "palavras" (assunto) só
+        # valem quando o texto cita uma cidade de "regiao" ou vem de uma fonte regional.
+        self._brand_re = {c["slug"]: _word_regex(c["marcas"]) for c in self.categories if c.get("marcas")}
+        self._region_re = {c["slug"]: _word_regex(c["regiao"]) for c in self.categories if c.get("regiao")}
         self._glossary_re = [
             (term, re.compile(r"(?<![\w])" + re.escape(term if term.isupper() else _norm(term)) + r"(?![\w])"), term.isupper())
             for term in self.glossary
@@ -195,19 +202,32 @@ class Processor:
         uma palavra-chave da aba; sem nenhuma aba, ela é descartada (buscas amplas trazem ruído).
         """
         title_norm, body_norm = _norm(title), _norm(trecho)
+        default = source["categoria"]
+        regional_source = bool(source.get("regional"))
+
+        def hits(regex: re.Pattern) -> int:
+            return 2 * len(set(m.group(0) for m in regex.finditer(title_norm))) + len(
+                set(m.group(0) for m in regex.finditer(body_norm))
+            )
+
         found: dict[str, tuple[str, float]] = {}
         scores: dict[str, int] = {}
         for slug, regex in self._cat_re.items():
-            score = 2 * len(set(m.group(0) for m in regex.finditer(title_norm)))
-            score += len(set(m.group(0) for m in regex.finditer(body_norm)))
+            if regional_source and slug != default:
+                continue  # jornal regional só alimenta a própria aba (evita ruído nas outras)
+            score = hits(regex)
+            if slug in self._region_re:
+                in_region = (regional_source and slug == default) or hits(self._region_re[slug]) > 0
+                score = score if in_region else 0
+            if slug in self._brand_re:
+                score += hits(self._brand_re[slug])
             scores[slug] = score
             if score >= 2:
                 found[slug] = ("regra", round(min(1.0, 0.4 + 0.15 * score), 2))
-        default = source["categoria"]
         if default in self._cat_re and default not in found:
             if not self._strict.get(default):
                 found[default] = ("fonte", 0.6)
-            elif scores[default] >= 1:
+            elif scores.get(default, 0) >= self._min_points.get(default, 1):
                 found[default] = ("fonte", 0.5)
         ordered = sorted(found.items(), key=lambda kv: kv[1][1], reverse=True)
         return [(slug, origem, conf) for slug, (origem, conf) in ordered]
@@ -275,6 +295,7 @@ class Processor:
             return None
 
         veiculo = raw.veiculo or source["nome"]
+        imagem_url = secure_image_url(raw.imagem_url) if is_http_url(raw.imagem_url) else None
         categories = self.classify(source, title, raw.trecho)
         if not categories:
             return None
@@ -309,8 +330,8 @@ class Processor:
             """,
             (
                 title, norm, raw.url, canonical, source["id"], veiculo,
-                raw.imagem_url if is_http_url(raw.imagem_url) else None,
-                raw.imagem_origem if is_http_url(raw.imagem_url) else "nenhuma",
+                imagem_url,
+                raw.imagem_origem if imagem_url else "nenhuma",
                 to_iso(published) if published else None,
                 1 if published else 0,
                 collected, raw.trecho, source.get("idioma", "pt"), 1 if oficial else 0,
@@ -352,7 +373,7 @@ class Processor:
 
 def _classification_fingerprint(conn: sqlite3.Connection, categories: list[dict]) -> str:
     """Muda quando as abas, as palavras-chave ou o tema de alguma fonte mudam."""
-    sources = conn.execute("SELECT id, categoria FROM sources ORDER BY id").fetchall()
+    sources = conn.execute("SELECT id, categoria, regional FROM sources ORDER BY id").fetchall()
     payload = json.dumps(
         {"categorias": categories, "fontes": [tuple(row) for row in sources]}, ensure_ascii=False, sort_keys=True
     )
@@ -366,10 +387,11 @@ def reclassify_all(conn: sqlite3.Connection, categories: list[dict] | None = Non
     """
     processor = Processor(conn, categories=categories, glossary={})
     rows = conn.execute(
-        "SELECT a.id, a.titulo, a.trecho, s.categoria FROM articles a JOIN sources s ON s.id = a.source_id"
+        "SELECT a.id, a.titulo, a.trecho, s.categoria, s.regional FROM articles a JOIN sources s ON s.id = a.source_id"
     ).fetchall()
     for row in rows:
-        found = processor.classify({"categoria": row["categoria"]}, row["titulo"], row["trecho"] or "")
+        source = {"categoria": row["categoria"], "regional": row["regional"]}
+        found = processor.classify(source, row["titulo"], row["trecho"] or "")
         conn.execute("DELETE FROM article_categories WHERE article_id = ?", (row["id"],))
         if not found:
             conn.execute("DELETE FROM articles_fts WHERE rowid = ?", (row["id"],))

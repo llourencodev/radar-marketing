@@ -25,7 +25,7 @@ from .textutil import canonical_url, host_of, is_http_url, strip_html, struct_ti
 _IMG_RE = re.compile(r"<img[^>]+src=[\"']([^\"']+)[\"']", re.IGNORECASE)
 _AGGREGATOR_HOSTS = ("news.google.com", "bing.com")
 MAX_ITEMS_PER_SOURCE = 40
-MAX_PAGE_IMAGES_PER_SOURCE = 6
+MAX_PAGE_IMAGES_PER_SOURCE = 10
 
 
 @dataclass

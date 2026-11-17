@@ -42,8 +42,11 @@ PERIOD_WINDOWS = {
     "1a": timedelta(days=365),
 }
 REPRESENTATIVE = (
+    # Representante do grupo de duplicadas: oficial, depois link original (não agregador),
+    # depois com imagem da fonte, depois relevância.
     "(a.grupo_id IS NULL OR a.id = (SELECT x.id FROM articles x WHERE x.grupo_id = a.grupo_id "
-    "ORDER BY x.oficial DESC, x.relevancia DESC, x.id LIMIT 1))"
+    "ORDER BY x.oficial DESC, (x.status != 'link via agregador') DESC, (x.imagem_url IS NOT NULL) DESC, "
+    "x.relevancia DESC, x.id LIMIT 1))"
 )
 
 
@@ -135,7 +138,7 @@ def create_app(cfg: settings.Settings | None = None, scheduler: bool = True) -> 
     def meta() -> dict:
         return {
             "versao": __version__,
-            "categorias": [{k: v for k, v in c.items() if k != "palavras"} for c in settings.load_categories()],
+            "categorias": settings.public_categories(),
             "sinais": {key: spec["rotulo"] for key, spec in SINAIS.items()},
             "ia": cfg.llm_provider,
             "intervalo_min": cfg.collect_interval_min,

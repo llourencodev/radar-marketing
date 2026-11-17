@@ -15,6 +15,7 @@ const ICONS = {
   sparkles: P('<path d="M12 3l1.8 4.7L18 9.5l-4.2 1.8L12 16l-1.8-4.7L6 9.5l4.2-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'),
   monitor: P('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M7 12l3-3 2 2 4-4"/>'),
   store: P('<path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1.5a2.7 2.7 0 01-5.3 0 2.7 2.7 0 01-5.4 0A2.7 2.7 0 014 10.5z"/><path d="M5.5 13v7h13v-7M10 20v-4.5h4V20"/>'),
+  pin: P('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
   bolt: P('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'),
   scale: P('<path d="M12 3v18M5 21h14M6 7h12"/><path d="M6 7l-3 7a3 3 0 006 0zM18 7l-3 7a3 3 0 006 0z"/>'),
   layers: P('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'),
@@ -26,7 +27,7 @@ const ICONS = {
   external: P('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>'),
   close: P('<path d="M6 6l12 12M18 6L6 18"/>'),
 };
-const CAT_ICONS = { digital: "monitor", construcao: "store", performance: "target", seo: "search", social: "users", branding: "megaphone", martech: "sparkles", mercado: "cart" };
+const CAT_ICONS = { digital: "monitor", construcao: "store", regional: "pin", performance: "target", seo: "search", social: "users", branding: "megaphone", martech: "sparkles", mercado: "cart" };
 function icon(name) {
   const el = document.createElement("span");
   el.className = "ico";
@@ -419,7 +420,8 @@ async function renderList(view) {
   const cat = state.view.category ? catOf(state.view.category) : null;
   const highlight = HIGHLIGHTS.find((item) => item.key === state.view.key);
   const title = cat ? cat.nome : highlight ? highlight.label : "Todas as notícias";
-  const sub = cat ? "Publicações oficiais e notícias jornalísticas aparecem identificadas; histórias repetidas em vários veículos aparecem uma vez."
+  const catInfo = state.cats[state.view.category] || {};
+  const sub = cat ? (catInfo.descricao || "Publicações oficiais e notícias jornalísticas aparecem identificadas; histórias repetidas em vários veículos aparecem uma vez.")
     : highlight ? highlight.sub : null;
   const info = h("p", { class: "results-info" });
   const holder = h("div", {});

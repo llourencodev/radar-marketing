@@ -37,8 +37,8 @@ def client(cfg):
 
 def test_meta_e_interface(client):
     meta = client.get("/api/meta").json()
-    assert len(meta["categorias"]) == 8 and "palavras" not in meta["categorias"][0]
-    assert {"digital", "construcao"} <= {c["slug"] for c in meta["categorias"]}
+    assert len(meta["categorias"]) == 9 and "palavras" not in meta["categorias"][0]
+    assert {"digital", "construcao", "regional"} <= {c["slug"] for c in meta["categorias"]}
     assert meta["ia"] == "none"
     page = client.get("/")
     assert page.status_code == 200 and "Radar de" in page.text
@@ -51,6 +51,26 @@ def test_lista_agrupa_duplicadas_e_ordena_por_data(client):
     titles = [a["titulo"] for a in data["items"]]
     assert titles[0].startswith("Meta Ads")
     assert client.get("/api/articles", params={"collapse": "false"}).json()["total"] == 4
+
+
+def test_duplicada_mostra_a_versao_com_link_original_e_imagem(client, cfg):
+    now = utcnow()
+    with db.session(cfg.db_path) as conn:
+        sources = {row["nome"]: dict(row) for row in conn.execute("SELECT * FROM sources")}
+        proc = Processor(conn, now=now)
+        proc.process(sources["Plataforma Oficial"], RawItem(  # chega primeiro, pelo agregador e sem imagem
+            titulo="Leroy Merlin dá voz à casa em campanha de Black Friday da Monks",
+            url="https://news.google.com/rss/articles/abc", publicado_em=now - timedelta(hours=1), via_agregador=True))
+        conn.execute("UPDATE sources SET oficial = 0")
+        conn.execute("UPDATE articles SET oficial = 0")
+        proc.process(sources["Jornal de Propaganda"], RawItem(
+            titulo="Leroy Merlin dá voz à casa em campanha de Black Friday criada pela Monks",
+            url="https://jornal.example.com/leroy", publicado_em=now - timedelta(hours=1),
+            imagem_url="https://jornal.example.com/leroy.jpg", imagem_origem="feed"))
+    items = client.get("/api/articles", params={"q": "leroy", "collapse": "false"}).json()["items"]
+    assert len(items) == 2 and items[0]["grupo_id"] == items[1]["grupo_id"]
+    shown = [a for a in client.get("/api/articles").json()["items"] if "Leroy" in a["titulo"]]
+    assert len(shown) == 1 and shown[0]["url"] == "https://jornal.example.com/leroy" and shown[0]["imagem_url"]
 
 
 def test_campos_do_cartao(client):

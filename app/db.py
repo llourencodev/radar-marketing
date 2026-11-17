@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS sources (
     ultimo_sucesso  TEXT,
     ultima_tentativa TEXT,
     falhas_seguidas INTEGER NOT NULL DEFAULT 0,
-    ultimo_erro     TEXT
+    ultimo_erro     TEXT,
+    regional        INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS article_groups (
@@ -164,16 +165,18 @@ def init_db(db_path: Path | str, sources: list[dict] | None = None) -> None:
     """
     with session(db_path) as conn:
         conn.executescript(SCHEMA)
+        _migrate(conn)
         for entry in sources or []:
             conn.execute(
                 """
                 INSERT INTO sources (nome, tipo, url, consulta, categoria, oficial,
-                                     prioridade, intervalo_min, idioma, seletor, ativo)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     prioridade, intervalo_min, idioma, seletor, ativo, regional)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(url) DO UPDATE SET
                     nome = excluded.nome, categoria = excluded.categoria,
                     oficial = excluded.oficial, prioridade = excluded.prioridade,
                     intervalo_min = excluded.intervalo_min, seletor = excluded.seletor,
+                    regional = excluded.regional,
                     ativo = CASE WHEN excluded.ativo = 0 THEN 0 ELSE sources.ativo END
                 """,
                 (
@@ -188,5 +191,23 @@ def init_db(db_path: Path | str, sources: list[dict] | None = None) -> None:
                     entry.get("idioma", "pt"),
                     entry.get("seletor"),
                     0 if entry.get("ativo") is False else 1,
+                    1 if entry.get("regional") else 0,
                 ),
             )
+
+
+# Colunas criadas depois da primeira versão: bancos antigos (inclusive o guardado no
+# cache do GitHub Actions) ganham a coluna sem perder dados.
+_ADDED_COLUMNS = {"sources": {"regional": "INTEGER NOT NULL DEFAULT 0"}}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, columns in _ADDED_COLUMNS.items():
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for name, ddl in columns.items():
+            if name not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
+    # Imagens antigas gravadas com http: o site em https não consegue exibi-las.
+    conn.execute(
+        "UPDATE articles SET imagem_url = 'https://' || substr(imagem_url, 8) WHERE imagem_url LIKE 'http://%'"
+    )

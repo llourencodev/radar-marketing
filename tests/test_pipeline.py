@@ -76,6 +76,74 @@ def test_aba_que_exige_palavra_chave_descarta_ruido_das_buscas(conn, sources):
     assert conn.execute("SELECT COUNT(*) FROM articles_fts WHERE rowid = ?", (noisy,)).fetchone()[0] == 0
 
 
+REGIONAL = {
+    "slug": "regional", "nome": "Regionais", "exige_palavra_chave": True,
+    "marcas": ["clube da casa", "miari"],
+    "palavras": ["material de construção", "loja de material", "tintas"],
+    "regiao": ["três pontas", "varginha", "sul de minas"],
+}
+
+
+def test_aba_regional_exige_loja_da_regiao_ou_cidade(conn, sources):
+    cats = [{"slug": "branding", "nome": "B", "palavras": ["campanha"]}, REGIONAL]
+    proc = Processor(conn, categories=cats, now=NOW)
+    busca = dict(sources["Jornal de Propaganda"], categoria="regional", regional=0)
+    jornal = dict(sources["Jornal de Propaganda"], categoria="regional", regional=1)
+    slugs = lambda src, title: [s for s, _, _ in proc.classify(src, title, "")]  # noqa: E731
+
+    # nome de loja da região vale sozinho, de qualquer fonte
+    assert "regional" in slugs(busca, "Clube da Casa lança campanha de Black Friday")
+    assert "regional" in slugs(sources["Blog de SEO"], "Miari & Cia inaugura nova loja")
+    # assunto genérico só vale com cidade da região...
+    assert slugs(busca, "Preço do material de construção sobe no Brasil") == []
+    assert "regional" in slugs(busca, "Lojas de material de construção de Varginha têm fila")
+    # ...ou quando vem de um jornal regional
+    assert slugs(jornal, "Loja de material amplia horário no fim de ano") == ["regional"]
+    # notícia do jornal regional fora do assunto é descartada e não polui as outras abas
+    assert slugs(jornal, "Prefeitura faz campanha de vacinação contra a gripe") == []
+    # com pontos_minimos = 2, citar o assunto só no texto não basta (ex.: carga de um caminhão)
+    estrito = Processor(conn, categories=[dict(REGIONAL, pontos_minimos=2)], now=NOW)
+    acidente = ("Carreta tomba na Fernão Dias", "O caminhão levava material de construção para Varginha.")
+    assert estrito.classify(jornal, *acidente) == []
+    assert [s for s, _, _ in estrito.classify(jornal, "Loja de material abre em Varginha", "")] == ["regional"]
+
+
+def test_imagem_http_vira_https(conn, sources, db_path):
+    from app import db
+
+    proc = Processor(conn, now=NOW)
+    article_id = proc.process(sources["Blog de SEO"], _item(
+        "Google anuncia core update", "https://seo.example.com/x", imagem_url="http://www.bing.com/th?id=1&pid=News"))
+    conn.execute("INSERT INTO articles (titulo, titulo_norm, url, url_canonica, source_id, veiculo, imagem_url, coletado_em) "
+                 "VALUES ('t', 't', 'https://a.example.com/v', 'a.example.com/v', 1, 'v', 'http://a.example.com/i.jpg', '2026-11-15T00:00:00Z')")
+    conn.commit()
+    url = lambda i: conn.execute("SELECT imagem_url FROM articles WHERE id = ?", (i,)).fetchone()[0]  # noqa: E731
+    assert url(article_id) == "https://www.bing.com/th?id=1&pid=News"
+    db.init_db(db_path)  # imagens antigas gravadas com http são corrigidas
+    old_id = conn.execute("SELECT id FROM articles WHERE url = 'https://a.example.com/v'").fetchone()[0]
+    assert url(old_id) == "https://a.example.com/i.jpg"
+
+
+def test_banco_antigo_ganha_a_coluna_regional(tmp_path):
+    import sqlite3
+
+    from app import db
+
+    path = tmp_path / "antigo.db"
+    old = sqlite3.connect(path)
+    old.execute("CREATE TABLE sources (id INTEGER PRIMARY KEY, nome TEXT NOT NULL, tipo TEXT NOT NULL, url TEXT NOT NULL UNIQUE, "
+                "consulta TEXT, categoria TEXT NOT NULL, oficial INTEGER NOT NULL DEFAULT 0, prioridade INTEGER NOT NULL DEFAULT 1, "
+                "intervalo_min INTEGER, ativo INTEGER NOT NULL DEFAULT 1, idioma TEXT NOT NULL DEFAULT 'pt', seletor TEXT, etag TEXT, "
+                "last_modified TEXT, ultimo_sucesso TEXT, ultima_tentativa TEXT, falhas_seguidas INTEGER NOT NULL DEFAULT 0, ultimo_erro TEXT)")
+    old.execute("INSERT INTO sources (nome, tipo, url, categoria) VALUES ('Velha', 'rss', 'https://velha.example.com/feed', 'seo')")
+    old.commit()
+    old.close()
+    db.init_db(path, [{"nome": "Jornal", "tipo": "rss", "url": "https://j.example.com/feed", "categoria": "regional", "regional": True}])
+    with db.session(path) as conn:
+        rows = {r["nome"]: r["regional"] for r in conn.execute("SELECT nome, regional FROM sources")}
+    assert rows == {"Velha": 0, "Jornal": 1}
+
+
 def test_reclassifica_o_banco_quando_as_abas_mudam(conn, sources):
     base = [{"slug": "seo", "nome": "SEO", "palavras": ["seo"]}, {"slug": "branding", "nome": "B", "palavras": ["campanha"]}]
     proc = Processor(conn, categories=base, now=NOW)

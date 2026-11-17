@@ -80,6 +80,15 @@ def load_categories() -> list[dict]:
     return _load_json("categories.json")
 
 
+# Listas usadas só pela classificação; a interface não precisa delas.
+_RULE_FIELDS = {"palavras", "marcas", "regiao"}
+
+
+def public_categories() -> list[dict]:
+    """Abas como a interface as recebe (sem as listas de palavras da classificação)."""
+    return [{k: v for k, v in c.items() if k not in _RULE_FIELDS} for c in load_categories()]
+
+
 @lru_cache(maxsize=1)
 def load_glossary() -> dict[str, str]:
     return _load_json("glossary.json")
