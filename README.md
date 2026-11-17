@@ -21,8 +21,12 @@ Pela linha de comando:
 
 ## O que ele faz
 
-- **6 abas temáticas**: Mídia Paga & Performance, SEO & Conteúdo, Redes Sociais &
-  Influência, Publicidade & Branding, IA & MarTech, E-commerce, Mercado & Regulação.
+- **8 abas temáticas**: Marketing Digital, Mídia Paga & Performance, SEO & Conteúdo, Redes
+  Sociais & Influência, Publicidade & Branding, IA & MarTech, Lojas de Construção & Varejo
+  (Leroy Merlin, Telhanorte, Obramax, Sodimac, Juntos Somos Mais, Anamaco, grandes
+  varejistas) e E-commerce, Mercado & Regulação.
+- **Reclassificação automática**: ao mudar abas ou palavras-chave em `config/categories.json`
+  (ou o tema de uma fonte), as notícias já coletadas são reclassificadas na próxima execução.
 - **Nada inventado**: título, data, imagem e link vêm só da fonte. Ausência aparece
   como ausência ("data não confirmada", "sem imagem da fonte", "link via agregador").
 - **Tipo e assunto explícitos**: cada notícia é *oficial* (plataforma, empresa ou órgão)

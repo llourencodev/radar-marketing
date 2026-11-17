@@ -7,6 +7,7 @@ resumo extrativo, termos do glossário, grupo de duplicidade e relevância.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -337,6 +338,50 @@ class Processor:
         )
         self._recent.append({"id": article_id, "norm": norm, "tokens": tokens, "grupo_id": group_id})
         return article_id
+
+
+def _classification_fingerprint(conn: sqlite3.Connection, categories: list[dict]) -> str:
+    """Muda quando as abas, as palavras-chave ou o tema de alguma fonte mudam."""
+    sources = conn.execute("SELECT id, categoria FROM sources ORDER BY id").fetchall()
+    payload = json.dumps(
+        {"categorias": categories, "fontes": [tuple(row) for row in sources]}, ensure_ascii=False, sort_keys=True
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def reclassify_all(conn: sqlite3.Connection, categories: list[dict] | None = None) -> int:
+    """Refaz as abas de todas as notícias já gravadas com as regras atuais."""
+    processor = Processor(conn, categories=categories, glossary={})
+    rows = conn.execute(
+        "SELECT a.id, a.titulo, a.trecho, s.categoria FROM articles a JOIN sources s ON s.id = a.source_id"
+    ).fetchall()
+    for row in rows:
+        found = processor.classify({"categoria": row["categoria"]}, row["titulo"], row["trecho"] or "")
+        conn.execute("DELETE FROM article_categories WHERE article_id = ?", (row["id"],))
+        conn.executemany(
+            "INSERT INTO article_categories (article_id, categoria, origem, confianca) VALUES (?, ?, ?, ?)",
+            [(row["id"], slug, origem, conf) for slug, origem, conf in found],
+        )
+    return len(rows)
+
+
+def reclassify_if_changed(conn: sqlite3.Connection, categories: list[dict] | None = None) -> int | None:
+    """Reclassifica o banco só quando config/categories.json ou os temas das fontes mudaram.
+
+    Devolve quantas notícias foram reclassificadas, ou None quando nada mudou.
+    """
+    categories = categories if categories is not None else settings.load_categories()
+    fingerprint = _classification_fingerprint(conn, categories)
+    stored = conn.execute("SELECT valor FROM app_meta WHERE chave = 'classificacao'").fetchone()
+    if stored and stored[0] == fingerprint:
+        return None
+    total = reclassify_all(conn, categories)
+    conn.execute(
+        "INSERT INTO app_meta (chave, valor) VALUES ('classificacao', ?) "
+        "ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor",
+        (fingerprint,),
+    )
+    return total
 
 
 def recompute_relevance(conn: sqlite3.Connection, now: datetime | None = None, days: int = 8) -> None:

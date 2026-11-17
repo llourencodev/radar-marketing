@@ -44,7 +44,7 @@ def test_export_gera_pagina_e_dados(cfg, tmp_path):
 
     data = json.loads((out / "data" / "radar.json").read_text(encoding="utf-8"))
     assert data["generated_at"] == info["generated_at"]
-    assert len(data["meta"]["categorias"]) == 6 and "palavras" not in data["meta"]["categorias"][0]
+    assert len(data["meta"]["categorias"]) == 8 and "palavras" not in data["meta"]["categorias"][0]
     assert data["status"]["coletando"] is False
     by_url = {a["url"]: a for a in data["articles"]}
     core = by_url["https://seo.example.com/core"]

@@ -104,6 +104,11 @@ CREATE TABLE IF NOT EXISTS collection_logs (
     itens_novos INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS app_meta (
+    chave TEXT PRIMARY KEY,
+    valor TEXT NOT NULL
+);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS articles_fts USING fts5(
     titulo, trecho, resumo, veiculo,
     tokenize = "unicode61 remove_diacritics 2"

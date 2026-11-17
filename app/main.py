@@ -111,7 +111,7 @@ def _local_day_start_utc() -> str:
 
 def create_app(cfg: settings.Settings | None = None, scheduler: bool = True) -> FastAPI:
     cfg = cfg or settings.get_settings()
-    db.init_db(cfg.db_path, settings.load_sources_config())
+    service.prepare_db(cfg)
     category_slugs = {c["slug"] for c in settings.load_categories()}
 
     async def _scheduler_loop() -> None:

@@ -13,6 +13,8 @@ const ICONS = {
   users: P('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.6a3.5 3.5 0 010 6.8M18 14.3a6.5 6.5 0 013.5 5.7"/>'),
   cart: P('<path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H6.6"/><circle cx="9.5" cy="18.5" r="1.5"/><circle cx="17" cy="18.5" r="1.5"/>'),
   sparkles: P('<path d="M12 3l1.8 4.7L18 9.5l-4.2 1.8L12 16l-1.8-4.7L6 9.5l4.2-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'),
+  monitor: P('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M7 12l3-3 2 2 4-4"/>'),
+  store: P('<path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1.5a2.7 2.7 0 01-5.3 0 2.7 2.7 0 01-5.4 0A2.7 2.7 0 014 10.5z"/><path d="M5.5 13v7h13v-7M10 20v-4.5h4V20"/>'),
   bolt: P('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'),
   scale: P('<path d="M12 3v18M5 21h14M6 7h12"/><path d="M6 7l-3 7a3 3 0 006 0zM18 7l-3 7a3 3 0 006 0z"/>'),
   layers: P('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'),
@@ -24,7 +26,7 @@ const ICONS = {
   external: P('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>'),
   close: P('<path d="M6 6l12 12M18 6L6 18"/>'),
 };
-const CAT_ICONS = { performance: "target", seo: "search", social: "users", branding: "megaphone", martech: "sparkles", mercado: "cart" };
+const CAT_ICONS = { digital: "monitor", construcao: "store", performance: "target", seo: "search", social: "users", branding: "megaphone", martech: "sparkles", mercado: "cart" };
 function icon(name) {
   const el = document.createElement("span");
   el.className = "ico";
@@ -345,7 +347,7 @@ const PERIODS = [
   ["", "Tudo", "qualquer data"],
   ["custom", "Intervalo…", "escolher as datas de início e fim"],
 ];
-const EXAMPLES = ["Core update do Google", "Meta Ads", "TikTok Shop", "LGPD e publicidade", "Black Friday", "Inteligência artificial"];
+const EXAMPLES = ["Leroy Merlin", "Material de construção", "Omnichannel", "Core update do Google", "Meta Ads", "Black Friday", "Inteligência artificial"];
 
 function filterBar(onChange) {
   const f = state.filters;

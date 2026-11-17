@@ -8,8 +8,24 @@
   {"nome": "Publicitários Criativos", "tipo": "rss", "url": "https://www.publicitarioscriativos.com/feed/", "categoria": "branding", "prioridade": 1, "idioma": "pt"},
   {"nome": "Promoview", "tipo": "rss", "url": "https://www.promoview.com.br/feed", "categoria": "branding", "prioridade": 1, "idioma": "pt"},
   {"nome": "Mercado & Consumo", "tipo": "rss", "url": "https://mercadoeconsumo.com.br/feed/", "categoria": "mercado", "prioridade": 2, "idioma": "pt"},
-  {"nome": "Rock Content (BR)", "tipo": "rss", "url": "https://rockcontent.com/br/blog/feed/", "categoria": "seo", "prioridade": 1, "idioma": "pt"},
-  {"nome": "Neil Patel (BR)", "tipo": "rss", "url": "https://neilpatel.com/br/feed/", "categoria": "seo", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Rock Content (BR)", "tipo": "rss", "url": "https://rockcontent.com/br/blog/feed/", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Neil Patel (BR)", "tipo": "rss", "url": "https://neilpatel.com/br/feed/", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Consumidor Moderno", "tipo": "rss", "url": "https://consumidormoderno.com.br/feed/", "categoria": "mercado", "prioridade": 1, "idioma": "pt"},
+
+  {"nome": "Anamaco", "tipo": "rss", "url": "https://www.anamaco.com.br/feed/", "categoria": "construcao", "prioridade": 2, "idioma": "pt"},
+  {"nome": "Abramat", "tipo": "rss", "url": "https://abramat.org.br/feed/", "categoria": "construcao", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Massa Cinzenta (Cimento Itambé)", "tipo": "rss", "url": "https://www.cimentoitambe.com.br/feed/", "categoria": "construcao", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Busca: Leroy Merlin", "tipo": "search", "motor": "google", "consulta": "\"Leroy Merlin\" campanha OR marketing OR loja OR varejo", "categoria": "construcao", "prioridade": 3, "idioma": "pt"},
+  {"nome": "Busca: home centers (Telhanorte, Obramax, Sodimac…)", "tipo": "search", "motor": "google", "consulta": "Telhanorte OR Obramax OR Sodimac OR Tumelero OR Balaroti OR \"Lojas Quero-Quero\" OR Dicico OR \"Cassol Centerlar\" OR \"C&C Casa e Construção\"", "categoria": "construcao", "prioridade": 2, "idioma": "pt"},
+  {"nome": "Busca: marketing de material de construção", "tipo": "search", "motor": "google", "consulta": "\"material de construção\" marketing OR campanha OR \"Black Friday\"", "categoria": "construcao", "prioridade": 2, "idioma": "pt"},
+  {"nome": "Busca: varejo de material de construção", "tipo": "search", "motor": "google", "consulta": "\"material de construção\" varejo vendas lojas", "categoria": "construcao", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Busca: Juntos Somos Mais e home centers", "tipo": "search", "motor": "google", "consulta": "\"Juntos Somos Mais\" OR \"Portobello Shop\" OR \"home centers\" varejo", "categoria": "construcao", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Busca: grandes varejistas", "tipo": "search", "motor": "google", "consulta": "\"Casas Bahia\" OR \"Magazine Luiza\" OR Americanas OR Renner OR Havan campanha OR marketing", "categoria": "construcao", "prioridade": 2, "idioma": "pt"},
+  {"nome": "Bing: Leroy Merlin", "tipo": "search", "motor": "bing", "consulta": "Leroy Merlin", "categoria": "construcao", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Retail Dive", "tipo": "rss", "url": "https://www.retaildive.com/feeds/news/", "categoria": "mercado", "prioridade": 1, "idioma": "en"},
+
+  {"nome": "Busca: estratégia de marketing digital", "tipo": "search", "motor": "google", "consulta": "\"marketing digital\" estratégia empresas", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Busca: omnichannel e transformação digital", "tipo": "search", "motor": "google", "consulta": "\"transformação digital\" OR omnichannel OR omnicanal varejo marketing", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
 
   {"nome": "ANPD (gov.br, via busca)", "tipo": "search", "motor": "google", "consulta": "site:gov.br/anpd", "categoria": "mercado", "oficial": true, "prioridade": 3, "intervalo_min": 180, "idioma": "pt"},
 
@@ -35,7 +51,7 @@
   {"nome": "Campaign", "tipo": "rss", "url": "https://www.campaignlive.com/rss/news", "categoria": "branding", "prioridade": 2, "idioma": "en"},
   {"nome": "Digiday", "tipo": "rss", "url": "https://digiday.com/feed/", "categoria": "performance", "prioridade": 2, "idioma": "en"},
 
-  {"nome": "Busca: marketing digital", "tipo": "search", "motor": "google", "consulta": "\"marketing digital\"", "categoria": "performance", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Busca: marketing digital", "tipo": "search", "motor": "google", "consulta": "\"marketing digital\"", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
   {"nome": "Busca: Google Ads e Meta Ads", "tipo": "search", "motor": "google", "consulta": "\"Google Ads\" OR \"Meta Ads\" anunciantes", "categoria": "performance", "prioridade": 1, "idioma": "pt"},
   {"nome": "Busca: SEO e algoritmo do Google", "tipo": "search", "motor": "google", "consulta": "SEO Google \"core update\" OR algoritmo OR \"AI Overviews\"", "categoria": "seo", "prioridade": 1, "idioma": "pt"},
   {"nome": "Busca: redes sociais e influenciadores", "tipo": "search", "motor": "google", "consulta": "Instagram OR TikTok marcas influenciadores marketing", "categoria": "social", "prioridade": 1, "idioma": "pt"},
@@ -47,6 +63,6 @@
   {"nome": "Busca: Mundo do Marketing", "tipo": "search", "motor": "google", "consulta": "site:mundodomarketing.com.br", "categoria": "branding", "prioridade": 2, "idioma": "pt"},
   {"nome": "Busca: E-Commerce Brasil", "tipo": "search", "motor": "google", "consulta": "site:ecommercebrasil.com.br", "categoria": "mercado", "prioridade": 2, "idioma": "pt"},
   {"nome": "Busca: Search Engine Land", "tipo": "search", "motor": "google", "consulta": "site:searchengineland.com", "categoria": "seo", "prioridade": 2, "idioma": "en"},
-  {"nome": "Bing: marketing digital", "tipo": "search", "motor": "bing", "consulta": "marketing digital", "categoria": "performance", "prioridade": 1, "idioma": "pt"},
+  {"nome": "Bing: marketing digital", "tipo": "search", "motor": "bing", "consulta": "marketing digital", "categoria": "digital", "prioridade": 1, "idioma": "pt"},
   {"nome": "Bing: publicidade e marcas", "tipo": "search", "motor": "bing", "consulta": "publicidade marcas campanha", "categoria": "branding", "prioridade": 1, "idioma": "pt"}
 ]

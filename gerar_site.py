@@ -45,7 +45,7 @@ def main() -> None:
 
     cfg = settings.get_settings()
     fontes = settings.load_sources_config()
-    db.init_db(cfg.db_path, fontes)
+    service.prepare_db(cfg)
     try:
         if not args.sem_coleta:
             sincronizar_fontes(cfg, fontes)

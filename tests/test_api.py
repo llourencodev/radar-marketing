@@ -37,7 +37,8 @@ def client(cfg):
 
 def test_meta_e_interface(client):
     meta = client.get("/api/meta").json()
-    assert len(meta["categorias"]) == 6 and "palavras" not in meta["categorias"][0]
+    assert len(meta["categorias"]) == 8 and "palavras" not in meta["categorias"][0]
+    assert {"digital", "construcao"} <= {c["slug"] for c in meta["categorias"]}
     assert meta["ia"] == "none"
     page = client.get("/")
     assert page.status_code == 200 and "Radar de" in page.text

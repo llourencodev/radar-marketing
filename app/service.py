@@ -10,13 +10,23 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import collectors, db, llm, settings
-from .pipeline import Processor, recompute_relevance
+from .pipeline import Processor, recompute_relevance, reclassify_if_changed
 from .textutil import from_iso, now_iso, to_iso, utcnow
 
 log = logging.getLogger("radar.coleta")
 
 _run_lock = threading.Lock()
 MAX_WORKERS = 6
+
+
+def prepare_db(cfg: settings.Settings) -> int | None:
+    """Cria/atualiza o banco e as fontes; reclassifica as notícias se as abas mudaram."""
+    db.init_db(cfg.db_path, settings.load_sources_config())
+    with db.session(cfg.db_path) as conn:
+        total = reclassify_if_changed(conn)
+    if total is not None:
+        log.info("Abas ou temas das fontes mudaram: %d notícia(s) reclassificada(s)", total)
+    return total
 
 
 def is_running() -> bool:

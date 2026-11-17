@@ -29,6 +29,35 @@ def test_palavra_chave_exige_palavra_inteira(conn, sources):
     assert [slug for slug, _, _ in cats] == ["branding"]
 
 
+def test_classifica_lojas_de_construcao_varejo_e_marketing_digital(conn, sources):
+    proc = Processor(conn, now=NOW)
+    slugs = lambda title: [slug for slug, _, _ in proc.classify(sources["Blog de SEO"], title, "")]  # noqa: E731
+    assert "construcao" in slugs("Leroy Merlin dá voz à casa em campanha de Black Friday")
+    assert "construcao" in slugs("Telhanorte escolhe nova tecnologia para lojas de material de construção")
+    assert "construcao" in slugs("Magazine Luiza e Casas Bahia apostam em lojas físicas no Natal")
+    assert "digital" in slugs("Varejo acelera estratégia omnichannel com marketing digital")
+    # "reforma tributária" não é assunto de lojas de construção
+    assert "construcao" not in slugs("Reforma tributária muda regras para o setor de serviços")
+
+
+def test_reclassifica_o_banco_quando_as_abas_mudam(conn, sources):
+    base = [{"slug": "seo", "nome": "SEO", "palavras": ["seo"]}, {"slug": "branding", "nome": "B", "palavras": ["campanha"]}]
+    proc = Processor(conn, categories=base, now=NOW)
+    article_id = proc.process(sources["Jornal de Propaganda"], _item("Leroy Merlin lança campanha de Natal", "https://jornal.example.com/lm"))
+    conn.commit()
+    cats = lambda: {r[0] for r in conn.execute("SELECT categoria FROM article_categories WHERE article_id = ?", (article_id,))}  # noqa: E731
+    assert cats() == {"branding"}
+
+    assert pipeline.reclassify_if_changed(conn, base) >= 1  # primeira vez grava a impressão digital
+    assert pipeline.reclassify_if_changed(conn, base) is None  # nada mudou: não refaz
+    novas = base + [{"slug": "construcao", "nome": "Construção", "palavras": ["leroy merlin"]}]
+    assert pipeline.reclassify_if_changed(conn, novas) >= 1
+    assert cats() == {"branding", "construcao"}
+    conn.execute("UPDATE sources SET categoria = 'seo' WHERE nome = 'Jornal de Propaganda'")
+    assert pipeline.reclassify_if_changed(conn, novas) >= 1  # tema da fonte mudou
+    assert "seo" in cats()
+
+
 def test_processa_grava_noticia_completa(conn, sources):
     proc = Processor(conn, now=NOW)
     article_id = proc.process(

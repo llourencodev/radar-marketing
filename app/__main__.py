@@ -9,7 +9,7 @@ import webbrowser
 
 import uvicorn
 
-from . import db, service, settings
+from . import service, settings
 from .main import create_app
 
 
@@ -24,7 +24,7 @@ def main() -> None:
     cfg = settings.get_settings()
 
     if args.collect:
-        db.init_db(cfg.db_path, settings.load_sources_config())
+        service.prepare_db(cfg)
         print(service.run_collection(cfg, trigger="manual", only_due=False))
         return
 
